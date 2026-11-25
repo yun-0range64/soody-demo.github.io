@@ -67,7 +67,18 @@ let sketch = function (p) {
     }
 
     p.setup = function () {
+
         p.createCanvas(995, 575, p.WEBGL);
+
+        // 원근 왜곡 제거
+        p.ortho(
+            -p.width / 2,
+            p.width / 2,
+            -p.height / 2,
+            p.height / 2,
+            -1000,
+            1000
+        );
     };
 
     p.draw = function () {
@@ -214,16 +225,50 @@ let sketch = function (p) {
                 p.stroke(255, 0, 0);
             }
 
-            // 랜드마크 표시
-            p.strokeWeight(10);
+
+            /* ========================================
+               손가락 관절 그리기
+               PC 및 모바일 카메라 좌표 보정
+            ======================================== */
+
+            p.strokeWeight(14);
+
+            const video = document.getElementById("video");
+
+            if (!video || !video.videoWidth || !video.videoHeight) {
+                continue;
+            }
+
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+
+            const rect = video.getBoundingClientRect();
+
+            const displayWidth = rect.width;
+            const displayHeight = rect.height;
+
+            const scale = Math.max(
+                displayWidth / videoWidth,
+                displayHeight / videoHeight
+            );
+
+            const offsetX =
+                (displayWidth - videoWidth * scale) / 2;
+
+            const offsetY =
+                (displayHeight - videoHeight * scale) / 2;
 
             for (let j = 0; j < landmarks.length; j++) {
 
-                p.point(
-                    landmarks[j].x * p.width,
-                    landmarks[j].y * p.height,
-                    landmarks[j].z
-                );
+                const x = (
+                    landmarks[j].x * videoWidth * scale + offsetX
+                ) / displayWidth * p.width;
+
+                const y = (
+                    landmarks[j].y * videoHeight * scale + offsetY
+                ) / displayHeight * p.height;
+
+                p.point(x, y, 0);
             }
         }
 
@@ -294,7 +339,7 @@ let sketch = function (p) {
                 $(".camera-caption").text(defaultCaption);
 
                 // 칭찬 바텀시트 표시
-nextSheet.css("visibility", "visible");
+                nextSheet.css("visibility", "visible");
 
                 success = true;
                 window.number7Success = true;

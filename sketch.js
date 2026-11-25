@@ -291,7 +291,7 @@ let sketch = function(p) {
                손가락 관절 그리기
             ======================================== */
 
-            p.strokeWeight(10);
+            p.strokeWeight(14);
 
 const video = document.getElementById("video");
 
