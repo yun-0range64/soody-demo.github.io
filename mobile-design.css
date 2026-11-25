@@ -1039,7 +1039,7 @@ canvas.p5Canvas {
     background: #19b9bb;
 }
 
-/* 높이가 작은 화면 대응 */
+/* 높이가 작은 화면 대응close*/
 
 @media (max-height: 740px) {
 
@@ -1060,4 +1060,8 @@ canvas.p5Canvas {
     .final-page .final-bottom {
         bottom: 24px;
     }
+}
+
+body:has(.sentence-page) canvas.p5Canvas {
+    height: 44% !important;
 }

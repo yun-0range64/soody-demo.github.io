@@ -46,12 +46,19 @@ function resetHoldGuide() {
 
 let sketch = function(p) {
 
-    p.setup = function() {
+   p.setup = function() {
 
-        canvas = p.createCanvas(995, 575, p.WEBGL);
+    canvas = p.createCanvas(995, 575, p.WEBGL);
 
-    };
-
+    p.ortho(
+        -p.width / 2,
+        p.width / 2,
+        -p.height / 2,
+        p.height / 2,
+        -1000,
+        1000
+    );
+};
 
     p.draw = function() {
 
@@ -286,14 +293,43 @@ let sketch = function(p) {
 
             p.strokeWeight(10);
 
-            for (let j = 0; j < hand.length; j++) {
+const video = document.getElementById("video");
 
-                let x = hand[j].x * p.width;
-                let y = hand[j].y * p.height;
-                let z = hand[j].z;
+if (!video || !video.videoWidth || !video.videoHeight) {
+    continue;
+}
 
-                p.point(x, y, z);
-            }
+const videoWidth = video.videoWidth;
+const videoHeight = video.videoHeight;
+
+const rect = video.getBoundingClientRect();
+
+const displayWidth = rect.width;
+const displayHeight = rect.height;
+
+const scale = Math.max(
+    displayWidth / videoWidth,
+    displayHeight / videoHeight
+);
+
+const offsetX =
+    (displayWidth - videoWidth * scale) / 2;
+
+const offsetY =
+    (displayHeight - videoHeight * scale) / 2;
+
+for (let j = 0; j < hand.length; j++) {
+
+    const x = (
+        hand[j].x * videoWidth * scale + offsetX
+    ) / displayWidth * p.width;
+
+    const y = (
+        hand[j].y * videoHeight * scale + offsetY
+    ) / displayHeight * p.height;
+
+    p.point(x, y, 0);
+}
         }
     };
 };
