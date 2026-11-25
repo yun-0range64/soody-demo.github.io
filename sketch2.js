@@ -10,8 +10,9 @@ let sketch = function (p) {
     const ERROR_TOLERANCE = 200;
 
     // 손 모양 인식 기준
-    const VERTICAL_THRESHOLD = 0.50;
-    const MIN_HAND_LENGTH = 1.35;
+    const VERTICAL_THRESHOLD = 0.30;
+    const FINGER_STRAIGHTNESS = 0.80;
+    const FINGER_GAP = 0.45;
 
     const defaultCaption =
         "내 손동작을 카메라에 보여주세요";
@@ -19,10 +20,8 @@ let sketch = function (p) {
     const holdCaption =
         "손의 자세를 조금 더 유지해 주세요!";
 
-
     // 3차원 거리 계산
     function getDistance(a, b) {
-
         return Math.hypot(
             a.x - b.x,
             a.y - b.y,
@@ -30,17 +29,14 @@ let sketch = function (p) {
         );
     }
 
-
     // 방향 벡터 계산
     function getDirection(a, b) {
-
         return {
             x: b.x - a.x,
             y: b.y - a.y,
             z: b.z - a.z
         };
     }
-
 
     // 두 벡터 사이의 각도 계산
     function getVectorAngle(v1, v2) {
@@ -68,7 +64,6 @@ let sketch = function (p) {
         return Math.acos(cos) * 180 / Math.PI;
     }
 
-
     // 관절 각도 계산
     function getAngle(a, b, c) {
 
@@ -78,6 +73,19 @@ let sketch = function (p) {
         );
     }
 
+    // 손가락의 펼쳐진 정도 계산
+    function straightness(points, a, b, c, d) {
+
+        const direct =
+            getDistance(points[a], points[d]);
+
+        const total =
+            getDistance(points[a], points[b]) +
+            getDistance(points[b], points[c]) +
+            getDistance(points[c], points[d]);
+
+        return direct / Math.max(total, 0.000001);
+    }
 
     p.setup = function () {
 
@@ -94,7 +102,6 @@ let sketch = function (p) {
         );
     };
 
-
     p.draw = function () {
 
         p.clear();
@@ -109,7 +116,6 @@ let sketch = function (p) {
         const hands =
             detections?.multiHandLandmarks || [];
 
-
         for (let i = 0; i < hands.length; i++) {
 
             const landmarks = hands[i];
@@ -121,19 +127,16 @@ let sketch = function (p) {
                 z: point.z * p.width
             }));
 
-
             // 손 모양 판정용 3D 좌표
             const points =
                 detections.multiHandWorldLandmarks?.[i] ||
                 screenPoints;
-
 
             // 손바닥 크기 기준 정규화
             const palmSize = Math.max(
                 getDistance(points[0], points[9]),
                 0.000001
             );
-
 
             const ratio = (a, b) => {
 
@@ -142,7 +145,6 @@ let sketch = function (p) {
                     points[b]
                 ) / palmSize;
             };
-
 
             const angle = (a, b, c) => {
 
@@ -153,10 +155,9 @@ let sketch = function (p) {
                 );
             };
 
-
-            /* ========================================
-               1. 엄지손가락 접힘
-            ======================================== */
+            // ===================================
+            // 1. 엄지 접힘 - 인식 조건 완화
+            // ===================================
 
             // 엄지가 확실하게 펼쳐진 경우만 오답 처리
             const isThumbExtended =
@@ -167,30 +168,81 @@ let sketch = function (p) {
 
                 angle(2, 3, 4) > 150;
 
-
-            // 엄지가 가려져도 유연하게 판정
+            // 엄지가 가려져 위치가 부정확해도 허용
             const isThumbFolded = !isThumbExtended;
 
+            // ===================================
+            // 2. 검지 펼침
+            // ===================================
 
-            /* ========================================
-               2. 엄지를 제외한 랜드마크 수직 정렬
-            ======================================== */
+            const isIndexExtended =
 
-            // 엄지손가락 랜드마크 1~4 제외
+                straightness(
+                    points, 5, 6, 7, 8
+                ) > FINGER_STRAIGHTNESS &&
+
+                angle(5, 6, 7) > 135;
+
+            // ===================================
+            // 3. 중지 펼침
+            // ===================================
+
+            const isMiddleExtended =
+
+                straightness(
+                    points, 9, 10, 11, 12
+                ) > FINGER_STRAIGHTNESS &&
+
+                angle(9, 10, 11) > 135;
+
+            // ===================================
+            // 4. 약지 펼침
+            // ===================================
+
+            const isRingExtended =
+
+                straightness(
+                    points, 13, 14, 15, 16
+                ) > FINGER_STRAIGHTNESS &&
+
+                angle(13, 14, 15) > 135;
+
+            // ===================================
+            // 5. 새끼손가락 펼침
+            // ===================================
+
+            const isPinkyExtended =
+
+                straightness(
+                    points, 17, 18, 19, 20
+                ) > FINGER_STRAIGHTNESS &&
+
+                angle(17, 18, 19) > 130;
+
+            // ===================================
+            // 6. 네 손가락을 모은 상태
+            // ===================================
+
+            const isFingersTogether =
+
+                ratio(8, 12) < FINGER_GAP &&
+
+                ratio(12, 16) < FINGER_GAP &&
+
+                ratio(16, 20) < FINGER_GAP;
+
+            // ===================================
+            // 7. 손날이 세로로 보이는 상태
+            // ===================================
+
+            // 엄지는 수직 판정에서 제외
             const verticalPoints = [
-
                 0,
-
                 5, 6, 7, 8,
-
                 9, 10, 11, 12,
-
                 13, 14, 15, 16,
-
                 17, 18, 19, 20
-
             ].map(index => screenPoints[index]);
-
 
             const xValues =
                 verticalPoints.map(point => point.x);
@@ -198,108 +250,55 @@ let sketch = function (p) {
             const yValues =
                 verticalPoints.map(point => point.y);
 
-
-            // 손의 전체 가로 범위
             const xRange =
                 Math.max(...xValues) -
                 Math.min(...xValues);
 
-
-            // 손의 전체 세로 범위
             const yRange =
                 Math.max(...yValues) -
                 Math.min(...yValues);
 
-
-            // 가로 길이 대비 세로 정렬 정도
+            // X좌표 차이가 작을수록 수직에 가까움
             const verticalRatio =
                 xRange / Math.max(yRange, 0.000001);
 
-
-            // 완벽한 일자가 아니어도 허용
             const isHandVertical =
                 verticalRatio < VERTICAL_THRESHOLD;
 
+            // ===================================
+            // 8. 손가락이 위를 향하는지 확인
+            // ===================================
 
-            /* ========================================
-               3. 손가락이 위를 향하는지 확인
-            ======================================== */
-
-            // 네 손가락 끝의 평균 Y좌표
-            const averageTipY = (
-
-                screenPoints[8].y +
-
-                screenPoints[12].y +
-
-                screenPoints[16].y +
-
-                screenPoints[20].y
-
-            ) / 4;
-
-
-            // 네 손가락 시작점의 평균 Y좌표
-            const averageBaseY = (
-
-                screenPoints[5].y +
-
-                screenPoints[9].y +
-
-                screenPoints[13].y +
-
-                screenPoints[17].y
-
-            ) / 4;
-
-
-            // 개별 손가락이 아닌 전체 방향으로 판정
             const isHandUp =
-                averageTipY < averageBaseY;
 
+                screenPoints[8].y <
+                screenPoints[5].y &&
 
-            /* ========================================
-               4. 주먹을 쥔 상태 방지
-            ======================================== */
+                screenPoints[12].y <
+                screenPoints[9].y &&
 
-            // 손목부터 네 손가락 끝까지의 평균 거리
-            const averageHandLength = (
+                screenPoints[16].y <
+                screenPoints[13].y &&
 
-                ratio(0, 8) +
+                screenPoints[20].y <
+                screenPoints[17].y;
 
-                ratio(0, 12) +
-
-                ratio(0, 16) +
-
-                ratio(0, 20)
-
-            ) / 4;
-
-
-            // 손가락이 어느 정도 펼쳐져 있으면 인정
-            const isHandExtended =
-                averageHandLength > MIN_HAND_LENGTH;
-
-
-            /* ========================================
-               '정말' 수어 최종 판정
-            ======================================== */
+            // ===================================
+            // '정말' 수어 최종 판정
+            // ===================================
 
             const isHandGreen =
 
                 isThumbFolded &&
-
+                isIndexExtended &&
+                isMiddleExtended &&
+                isRingExtended &&
+                isPinkyExtended &&
+                isFingersTogether &&
                 isHandVertical &&
+                isHandUp;
 
-                isHandUp &&
-
-                isHandExtended;
-
-
-            /* ========================================
-               랜드마크 색상 변경
-            ======================================== */
-
+            // 랜드마크 색상 변경
             if (isHandGreen) {
 
                 greenHandCount++;
@@ -344,7 +343,6 @@ let sketch = function (p) {
             const offsetY =
                 (displayHeight - videoHeight * scale) / 2;
 
-
             for (let j = 0; j < landmarks.length; j++) {
 
                 const x = (
@@ -359,21 +357,14 @@ let sketch = function (p) {
             }
         }
 
-
-        /* ========================================
-           성공 처리
-        ======================================== */
-
         // 한 손만 정확해도 인정
         const isGreen = greenHandCount >= 1;
 
         const now = performance.now();
 
-
         if (success) {
             return;
         }
-
 
         // 손을 내리면 유지 시간 초기화
         if (hands.length === 0) {
@@ -389,7 +380,6 @@ let sketch = function (p) {
 
             return;
         }
-
 
         // 정확한 자세인 경우
         if (isGreen) {
@@ -412,7 +402,6 @@ let sketch = function (p) {
                 lostStartTime = null;
             }
 
-
             // 유지 시간 측정 시작
             if (greenStartTime === null) {
 
@@ -420,7 +409,6 @@ let sketch = function (p) {
             }
 
             wasGreen = true;
-
 
             // 정확한 자세를 3초 유지
             if (now - greenStartTime >= HOLD_TIME) {
@@ -448,7 +436,6 @@ let sketch = function (p) {
 
                 console.log("정말 수어 인식 성공");
 
-
                 // 칭찬 바텀시트 표시
                 nextSheet.css(
                     "visibility",
@@ -463,7 +450,6 @@ let sketch = function (p) {
 
                 lostStartTime = now;
             }
-
 
             // 200ms 이상 자세가 풀리면 초기화
             if (
@@ -482,7 +468,6 @@ let sketch = function (p) {
             }
         }
     };
-
 
     // 자세 유지 안내
     function showHoldGuide() {
