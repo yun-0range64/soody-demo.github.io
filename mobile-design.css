@@ -1,0 +1,1063 @@
+
+/* ========================================
+   SOODY 모바일 튜터링
+   카메라 / MediaPipe 원본 구조 유지
+======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #252729;
+}
+
+body {
+  position: relative;
+  width: min(390px, 100vw);
+  height: min(844px, 100dvh);
+  min-height: 640px;
+  margin: 24px auto;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #fff;
+  color: #222;
+  font-family: Pretendard, Arial, sans-serif;
+  box-shadow: 0 18px 50px #0004;
+}
+
+.phone {
+  position: absolute;
+  inset: 0;
+}
+
+/* ========== 상단 진행률 ========== */
+
+.topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 76px;
+  padding: 12px 24px 0;
+}
+
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 30px;
+  color: #bfc5c8;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.progress {
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #dedede;
+}
+
+.progress-fill {
+  display: block;
+  width: 33.333%;
+  height: 100%;
+  border-radius: inherit;
+  background: #58c9c8;
+}
+
+.progress-count {
+  flex-shrink: 0;
+  color: #999;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* ========== 학습 제목 ========== */
+
+h1 {
+  margin: 12px 12px 0;
+  color: #222;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: -0.5px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ========== 튜터 ========== */
+
+.lesson {
+  position: absolute;
+  top: 145px;
+  bottom: 37%;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+
+  width: 100%;
+  overflow: hidden;
+}
+
+.tip {
+  display: none;
+}
+
+.tutor-gif {
+  display: block;
+  width: auto;
+  height: calc(100% - 18px);
+  max-width: 100%;
+  max-height: none;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+/* ========== 자막 카드 ========== */
+
+.speech {
+  position: absolute;
+  z-index: 5;
+  right: 20px;
+  bottom: 16px;
+  left: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 44px;
+  padding: 10px 16px;
+
+  border: 1px solid #e7e7e7;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.06);
+
+  color: #333;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.speech strong {
+  color: #58c9c8;
+  font-weight: 700;
+}
+
+/* ========================================
+   하단 카메라 — 기존 설정 그대로 유지
+======================================== */
+
+.camera-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 37%;
+  background: #1a1c1e;
+  overflow: hidden;
+
+}
+
+.camera-area #video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  z-index: 1;
+}
+
+.camera-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 17px;
+  transform: translateX(-50%);
+  z-index: 55;
+  background: #0009;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 30px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* MediaPipe 손 인식 캔버스를 카메라 영역에 정렬 */
+
+
+/* p5 손 인식 캔버스 — 하단 카메라에 맞추기 */
+
+canvas.p5Canvas {
+  position: absolute !important;
+
+  top: auto !important;
+  right: auto !important;
+  bottom: 0 !important;
+  left: 0 !important;
+
+  width: 100% !important;
+  height: 37% !important;
+
+  object-fit: cover !important;
+  transform: scaleX(-1) !important;
+  transform-origin: center center;
+
+  z-index: 50 !important;
+  border: none !important;
+  border-radius: 22px 22px 0 0;
+  pointer-events: none !important;
+  background: transparent !important;
+}
+
+
+
+#red1,
+#green1,
+#red2,
+#red2-1,
+#green2 {
+  position: absolute;
+  z-index: 70;
+  width: 110px;
+  max-width: 28%;
+  top: 12px;
+  right: 12px;
+}
+
+#green1,
+#green2,
+#red2-1 {
+  visibility: hidden;
+}
+
+/* ========== 학습 완료 화면 ========== */
+
+.next-btn {
+  position: absolute;
+  inset: 0;
+  background: #000a;
+  z-index: 5000;
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 28px;
+}
+
+.nextimg {
+  width: 220px;
+  max-width: 100%;
+  margin-bottom: 20px;
+}
+
+.next-btn button {
+  border: 0;
+  border-radius: 14px;
+  width: 100%;
+  padding: 16px;
+  margin: 7px 0;
+  background: #49cdbb;
+  cursor: pointer;
+}
+
+.next-btn button:last-child {
+  background: #ffffff44;
+  border: 1px solid white;
+}
+
+.next-btn button a {
+  font-size: 15px;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+/* ========== 모바일 ========== */
+
+@media (max-width: 430px) {
+  body {
+    margin: 0;
+    border-radius: 0;
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .lesson {
+    top: 145px;
+  }
+}
+
+@media (max-height: 740px) {
+  .topbar {
+    height: 65px;
+  }
+
+  h1 {
+    margin-top: 8px;
+    font-size: 20px;
+  }
+
+  .lesson {
+    top: 130px;
+  }
+}
+/* p5 */
+
+
+/* 성공 시 배경 어둡게 */
+.next-btn {
+  position: absolute;
+  inset: 0;
+  z-index: 5000;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  padding: 0;
+  background: rgba(0, 0, 0, 0.35);
+
+  visibility: hidden;
+}
+
+/* 하단 성공 바텀시트 */
+.success-sheet {
+  width: 100%;
+  padding: 20px 16px 40px;
+
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+}
+
+.success-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #20c5c7;
+  font-size: 15px;
+}
+
+.success-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+  background: #20c5c7;
+
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.success-description {
+  margin: 16px 0 18px;
+
+  color: #20bfc2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.success-sheet #btn1 {
+  width: 100%;
+  height: 42px;
+  margin: 0;
+
+  border: 0;
+  border-radius: 6px;
+
+  background: #56d7d8;
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+/* =====================================
+   1단계 성공 바텀시트 위치 수정
+===================================== */
+
+.next-btn {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 5000;
+
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+
+  padding: 0 !important;
+  background: rgba(0, 0, 0, 0.35);
+  visibility: hidden;
+}
+
+.success-sheet {
+  width: 100%;
+  flex-shrink: 0;
+  padding: 20px 16px 40px;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+}
+
+.success-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #20c5c7;
+  font-size: 15px;
+}
+
+.success-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #20c5c7;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.success-description {
+  margin: 16px 0 18px;
+  color: #20bfc2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.success-sheet #btn1 {
+  display: block;
+  width: 100%;
+  height: 42px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: #56d7d8;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* =====================================
+   2단계 단어 맞추기 화면 수정
+===================================== */
+
+
+.quiz-lesson {
+  top: 145px;
+  bottom: 144px;
+  justify-content: center;
+}
+
+.quiz-lesson .tutor-gif {
+  width: auto;
+  height: 100%;
+  max-height: 100%;
+  max-width: 90%;
+  object-fit: contain;
+}
+
+.quiz-bottom {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 22%;
+  padding: 20px 12px 38px;
+
+  border: 1px solid #ededed;
+  border-radius: 22px 22px 0 0;
+  background: #fff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.quiz-options {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.quiz-option {
+  position: relative;
+  flex: 1;
+  height: 64px;
+  padding: 0 8px;
+
+  border: 1px solid #e6e6e6;
+  border-radius: 7px;
+  background: #fff;
+
+  color: #333;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.quiz-option.selected {
+  border-color: #58c9c8;
+  background: #e0f9f7;
+  color: #1abbbd;
+  font-weight: 700;
+}
+
+.quiz-option.correct::after {
+  content: "✓";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #58c9c8;
+  color: #fff;
+  font-size: 10px;
+}
+
+
+/* =====================================
+   2단계 퀴즈 선택지 및 정답/오답 바텀시트
+===================================== */
+
+/* 퀴즈 하단 영역 높이 */
+.quiz-page {
+  --quiz-sheet-height: 25%;
+}
+
+/* =====================================
+   퀴즈 선택지 카드
+===================================== */
+
+/* 기본 선택지 */
+.quiz-option,
+.quiz-option.selected,
+.quiz-option.correct,
+.quiz-option.wrong {
+  position: relative;
+
+  height: 88px;
+  box-sizing: border-box;
+
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+
+  background: #fff;
+  color: #333;
+
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  cursor: pointer;
+}
+
+/* 기본 상태에서 체크 아이콘 숨김 */
+.quiz-option::after {
+  display: none !important;
+}
+
+/* 정답 선택 시 민트색 */
+.quiz-option.correct {
+  border: 1px solid #58c9c8;
+  background: #e0f9f7;
+  color: #1abbbd;
+  font-weight: 700;
+}
+
+/* 오답 선택 시 빨간색 */
+.quiz-option.wrong {
+  border: 1px solid #ff676b;
+  background: #fff0f0;
+  color: #ff676b;
+  font-weight: 700;
+}
+
+/* =====================================
+   정답 / 오답 카드 아이콘
+===================================== */
+
+.quiz-option.correct::after,
+.quiz-option.wrong::after {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  width: 17px;
+  height: 17px;
+
+  border-radius: 50%;
+  color: #fff;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* 정답: 민트색 체크 */
+.quiz-option.correct::after {
+  content: "✓";
+  background: #58c9c8;
+}
+
+/* 오답: 빨간색 엑스 */
+.quiz-option.wrong::after {
+  content: "×";
+  background: #ff676b;
+}
+
+/* =====================================
+   퀴즈 선택지 하단 영역
+===================================== */
+
+.quiz-page .quiz-bottom {
+  position: absolute !important;
+
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+
+  padding: 16px 12px 38px;
+  align-items: flex-start;
+
+  box-sizing: border-box;
+}
+
+/* =====================================
+   정답 / 오답 결과 오버레이
+===================================== */
+
+.quiz-page .quiz-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+
+  z-index: 5000;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+
+  width: 100% !important;
+  height: 100% !important;
+
+  padding: 0 !important;
+
+  background: rgba(0, 0, 0, 0.35);
+  visibility: hidden;
+}
+
+/* 결과 표시 */
+.quiz-page .quiz-overlay.show {
+  visibility: visible;
+}
+
+/* =====================================
+   정답 / 오답 바텀시트
+===================================== */
+
+.quiz-page .quiz-overlay .quiz-result-sheet {
+  position: relative !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+
+  width: 100% !important;
+  min-width: 100% !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  flex: 0 0 auto !important;
+
+  margin: 0 !important;
+  padding: 20px 16px 40px !important;
+
+  box-sizing: border-box;
+
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+}
+
+/* =====================================
+   결과 바텀시트 내부 요소
+===================================== */
+
+/* 제목 */
+.quiz-result-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #20c5c7;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 제목 아이콘 */
+.quiz-result-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+
+  background: #20c5c7;
+  color: #fff;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* 설명 */
+.quiz-result-description {
+  margin: 16px 0 18px;
+
+  color: #20bfc2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 다음 버튼 */
+#resultButton {
+  display: block;
+
+  width: 100%;
+  height: 45px;
+  padding: 0;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: #56d7d8;
+  color: #fff;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* =====================================
+   오답 바텀시트 색상  h1
+===================================== */
+
+.quiz-overlay.is-wrong .quiz-result-title,
+.quiz-overlay.is-wrong .quiz-result-description {
+  color: #ff676b;
+}
+
+.quiz-overlay.is-wrong .quiz-result-icon,
+.quiz-overlay.is-wrong #resultButton {
+  background: #ff676b;
+}
+
+.quiz-overlay.is-wrong .quiz-result-description {
+  color: #888;
+}
+
+
+
+
+.success-title strong {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 26px;
+}
+
+.success-check {
+    width: 20px;
+    height: 20px;
+    font-size: 13px;
+}
+
+.success-description {
+    font-size: 14px;
+    line-height: 21px;
+}
+
+.success-sheet #btn1 {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* =====================================
+   문장 보고 수어로 표현하기
+===================================== */
+
+/* 문장 학습 영역 h1*/
+
+.sentence-page .lesson {
+  top: 115px;
+  bottom: 44%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 16px;
+  padding: 0 20px 16px;
+}
+
+/* 일러스트 */
+
+.sentence-page .illu1 {
+  position: static;
+  display: block;
+
+  width: 100%;
+  height: auto;
+  max-height: calc(100% - 60px);
+  min-height: 0;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+/* 문장 카드 */
+
+.sentence-page .speech {
+  position: static;
+
+  width: 100%;
+  min-height: 44px;
+  flex-shrink: 0;
+
+  margin: 0;
+  padding: 12px 16px;
+
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+
+  border: 1px solid #e7e7e7;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.sentence-page .speech strong {
+  color: #58c9c8;
+  font-weight: 700;
+}
+
+/* 카메라 영역 */
+
+.sentence-page .camera-area {
+  top: auto;
+  bottom: 0;
+  height: 44%;
+  overflow: hidden;
+}
+
+/* ===================================
+   학습 완료 페이지
+=================================== */
+
+.final-page {
+    background: #ffffff;
+    overflow: hidden;
+}
+
+/* 학습 완료 콘텐츠 */
+
+.final-page .final-content {
+    position: absolute;
+    top: 12%;
+    left: 0;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 0 20px;
+}
+
+/* 축하 캐릭터 */
+
+.final-page .final-character {
+    display: block;
+
+    width: 220px;
+    height: 220px;
+
+    object-fit: contain;
+    margin-bottom: 28px;
+}
+
+/* 학습 완료 문구 */
+
+.final-page .final-message {
+    width: 100%;
+    text-align: center;
+}
+
+.final-page .final-message h1 {
+    margin: 0;
+
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: -0.6px;
+
+    color: #333333;
+}
+
+.final-page .final-message p {
+    margin: 12px 0 0;
+
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+
+    color: #888888;
+}
+
+/* 오늘 배운 단어 */
+
+.final-page .final-words {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+    gap: 12px;
+
+    width: 100%;
+    margin-top: 44px;
+}
+
+.final-page .final-word {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 84px;
+    height: 46px;
+
+    padding: 0 20px;
+
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 9px;
+
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+    font-size: 14px;
+    font-weight: 400;
+    color: #777777;
+}
+
+/* 하단 버튼 영역 */
+
+.final-page .final-bottom {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+
+    width: 100%;
+    padding: 0 16px;
+}
+
+/* 학습 마치기 버튼 */
+
+.final-page .final-finish-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 52px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #20c9cb;
+    color: #ffffff;
+
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+
+    cursor: pointer;
+}
+
+.final-page .final-finish-btn:active {
+    background: #19b9bb;
+}
+
+/* 높이가 작은 화면 대응 */
+
+@media (max-height: 740px) {
+
+    .final-page .final-content {
+        top: 8%;
+    }
+
+    .final-page .final-character {
+        width: 190px;
+        height: 190px;
+        margin-bottom: 20px;
+    }
+
+    .final-page .final-words {
+        margin-top: 32px;
+    }
+
+    .final-page .final-bottom {
+        bottom: 24px;
+    }
+}

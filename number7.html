@@ -1,0 +1,82 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SOODY | 숫자 7 배우기</title>
+<link rel="stylesheet" href="./mobile-design.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
+</head>
+
+<body>
+<div class="phone">
+
+  <header class="topbar">
+    <a href="#" class="close" aria-label="닫기">×</a>
+
+    <div class="progress">
+      <span class="progress-fill" style="width: 40%"></span>
+    </div>
+
+    <span class="progress-count">2/5</span>
+  </header>
+
+  <h1>새로운 수어를 배워볼까요?</h1>
+
+  <section class="lesson">
+    <p class="tip">
+      <strong>TIP</strong> 숫자 7을 손으로 표현해 보세요.
+    </p>
+
+    <img
+      class="tutor-gif"
+      src="./images/sign-tutor2.png"
+      alt="숫자 7 수어 동작 시범"
+    >
+
+    <div class="speech">
+      숫자 <strong>7</strong>을 표현해 보세요.
+    </div>
+  </section>
+
+  <div class="camera-area user">
+    <video id="video" autoplay muted playsinline></video>
+    <div class="camera-caption">
+      내 손동작을 카메라에 보여주세요
+    </div>
+  </div>
+
+  <div class="next-btn">
+    <div class="success-sheet">
+      <div class="success-title">
+        <span class="success-check">✓</span>
+        <strong>잘했어요!</strong>
+      </div>
+
+      <p class="success-description">
+        손의 위치와 방향이 정확해요.
+      </p>
+
+      <button id="btn1" type="button">
+        다음으로
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- 숫자 7 화면 전용 카메라 JS -->
+ <script defer src="./number7.js"></script>
+<script defer src="./sketch1.js"></script>
+
+
+</body>
+</html>
